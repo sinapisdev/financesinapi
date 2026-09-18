@@ -20,3 +20,5 @@ next-env.d.ts
 data/referencia/
 
 data/dump/
+
+.env.bak-*
