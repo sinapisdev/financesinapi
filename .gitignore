@@ -1,0 +1,22 @@
+# Credenciais — NUNCA commitar
+.env
+.env.local
+*.token
+
+# Dados financeiros brutos (sensíveis). O manifesto com hashes é versionado.
+data/raw/
+data/csv/
+data/derived/
+
+node_modules/
+.DS_Store
+
+# build do Next
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# planilhas de referência do Leo (DRE e de-para feitos fora do sistema)
+data/referencia/
+
+data/dump/
