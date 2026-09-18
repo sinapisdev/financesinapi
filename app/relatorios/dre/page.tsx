@@ -14,7 +14,7 @@ const GRUPOS: Record<string, string> = {
 };
 
 export default async function DRE({ searchParams }: { searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('contabilidade');
   const sp = await searchParams;
   const anoAtual = new Date().getFullYear();
   const de = str(sp.de) || `${anoAtual}-01-01`;

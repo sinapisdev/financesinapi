@@ -2,7 +2,7 @@
 
 import { pool, q } from '@/lib/db';
 import { normalizar } from '@/lib/texto';
-import { exigirEscrita } from '@/lib/auth';
+import { exigirEscritaArea } from '@/lib/permissoes';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -19,7 +19,7 @@ const id = (v: FormDataEntryValue | null) => Number(v) || null;
 
 export async function salvarItem(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let usuario;
-  try { usuario = await exigirEscrita(); } catch (e: any) { return { erro: e.message }; }
+  try { usuario = await exigirEscritaArea('estoque'); } catch (e: any) { return { erro: e.message }; }
 
   const itemId = Number(form.get('id')) || null;
   const empresaId = id(form.get('empresa_id'));
@@ -111,7 +111,7 @@ export async function salvarItem(_anterior: Resultado, form: FormData): Promise<
 
 export async function registrarMovimento(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let usuario;
-  try { usuario = await exigirEscrita(); } catch (e: any) { return { erro: e.message }; }
+  try { usuario = await exigirEscritaArea('estoque'); } catch (e: any) { return { erro: e.message }; }
 
   const itemId = Number(form.get('item_id'));
   const tipo = String(form.get('tipo') || '');
@@ -155,7 +155,7 @@ export async function registrarMovimento(_anterior: Resultado, form: FormData): 
 }
 
 export async function estornarMovimento(form: FormData) {
-  await exigirEscrita();
+  await exigirEscritaArea('estoque');
   const movId = Number(form.get('movimento_id'));
   const itemId = Number(form.get('item_id'));
   if (!movId) return;
@@ -169,7 +169,7 @@ export async function estornarMovimento(form: FormData) {
 }
 
 export async function mudarSituacao(form: FormData) {
-  await exigirEscrita();
+  await exigirEscritaArea('estoque');
   const itemId = Number(form.get('item_id'));
   const status = String(form.get('status') || '');
   if (!itemId || !STATUS.includes(status)) return;
@@ -193,7 +193,7 @@ export async function mudarSituacao(form: FormData) {
  */
 export async function entradaEmLote(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let usuario;
-  try { usuario = await exigirEscrita(); } catch (e: any) { return { erro: e.message }; }
+  try { usuario = await exigirEscritaArea('estoque'); } catch (e: any) { return { erro: e.message }; }
 
   const empresaId = id(form.get('empresa_id'));
   const data = String(form.get('data') || '');

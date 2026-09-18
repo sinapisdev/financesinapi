@@ -5,7 +5,7 @@ import Lista from './Lista';
 export const dynamic = 'force-dynamic';
 
 export default async function Grupos() {
-  await exigirEmpresa();
+  await exigirEmpresa('estoque');
 
   const [grupos, contas, ramos] = await Promise.all([
     q(`select g.id, g.codigo, g.nome, g.tipo, g.controle, g.ativo, g.observacao,

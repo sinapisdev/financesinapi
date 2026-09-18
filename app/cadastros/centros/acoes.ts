@@ -2,7 +2,7 @@
 
 import { pool, q } from '@/lib/db';
 import { normalizar } from '@/lib/texto';
-import { exigirEscrita } from '@/lib/auth';
+import { exigirEscritaArea } from '@/lib/permissoes';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -16,7 +16,7 @@ const num = (v: FormDataEntryValue | null) => {
 };
 
 export async function salvarCentro(_anterior: Resultado, form: FormData): Promise<Resultado> {
-  try { await exigirEscrita(); } catch (e: any) { return { erro: e.message }; }
+  try { await exigirEscritaArea('cadastros'); } catch (e: any) { return { erro: e.message }; }
 
   const id = Number(form.get('id')) || null;
   const codigo = Number(form.get('codigo'));

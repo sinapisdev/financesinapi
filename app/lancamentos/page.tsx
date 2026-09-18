@@ -7,7 +7,7 @@ type Params = { [k: string]: string | string[] | undefined };
 const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || '';
 
 export default async function Lancamentos({ searchParams }: { searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('movimento');
   const sp = await searchParams;
 
   const criado   = str(sp.criado);

@@ -6,7 +6,7 @@ import Formulario from '../Formulario';
 export const dynamic = 'force-dynamic';
 
 export default async function EditarCentro({ params }: { params: Promise<{ id: string }> }) {
-  await exigirEmpresa();
+  await exigirEmpresa('cadastros');
   const { id } = await params;
   const [centro] = await q<any>(`
     select cc.*, cc.data_inicio_prevista::text as data_inicio_prevista,

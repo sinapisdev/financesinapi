@@ -3,6 +3,10 @@
 //
 //   node scripts/criar-usuario.mjs <email> "<Nome>" [admin|financeiro|leitura]
 //
+// Age no banco local. Para agir no banco de produção (Supabase), passe a string
+// de conexão na frente:
+//   DATABASE_URL='postgresql://...' node scripts/criar-usuario.mjs ...
+//
 // Para uso não interativo (sem terminal), aceita as duas senhas pela entrada:
 //   printf 'senha\nsenha\n' | node scripts/criar-usuario.mjs ...
 import pg from 'pg';
@@ -74,14 +78,27 @@ if (senha !== repetida) encerrar(1, 'As senhas não conferem. Rode de novo.');
 if (senha.length < 10)  encerrar(1, `Use ao menos 10 caracteres (você digitou ${senha.length}).`);
 if (/^\d+$/.test(senha)) encerrar(1, 'Não use só números.');
 
-const cli = new pg.Client({ database: process.env.PGDATABASE || 'silvereng_dev' });
+// Com DATABASE_URL, redefine a senha no banco remoto (o mesmo que a Vercel usa);
+// sem ela, no Postgres local. O Supabase exige TLS com CA própria — mesma
+// configuração de lib/db.ts.
+const remoto = process.env.DATABASE_URL;
+const destino = remoto
+  ? (() => { const u = new URL(remoto); return `${u.host}${u.pathname}`; })()
+  : process.env.PGDATABASE || 'silvereng_dev';
+
+const cli = new pg.Client(
+  remoto
+    ? { connectionString: remoto, ssl: { rejectUnauthorized: false } }
+    : { database: process.env.PGDATABASE || 'silvereng_dev' }
+);
 try {
   await cli.connect();
 } catch (e) {
-  console.error(`\n  Não consegui conectar ao banco "${process.env.PGDATABASE || 'silvereng_dev'}".`);
+  console.error(`\n  Não consegui conectar ao banco "${destino}".`);
   console.error(`  ${e.message}\n`);
   process.exit(1);
 }
+console.log(`\n  banco: ${destino}`);
 
 try {
   const { rows } = await cli.query(
@@ -95,7 +112,7 @@ try {
   // trocar a senha encerra as sessões antigas
   await cli.query('delete from sessao where usuario_id = $1', [rows[0].id]);
   const u = rows[0];
-  console.log(`\n  Pronto. Entre em http://localhost:3100 com:`);
+  console.log(`\n  Pronto. Entre ${remoto ? 'no endereço da aplicação' : 'em http://localhost:3100'} com:`);
   console.log(`    e-mail: ${u.email}`);
   console.log(`    papel:  ${u.papel}\n`);
 } catch (e) {

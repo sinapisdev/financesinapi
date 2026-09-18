@@ -5,7 +5,7 @@ import FormEntrada from './FormEntrada';
 export const dynamic = 'force-dynamic';
 
 export default async function EntradaEstoque() {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('estoque');
 
   const [grupos, empresas, centros, pessoas, itens] = await Promise.all([
     // só grupos que estocam: não faz sentido dar entrada em serviço

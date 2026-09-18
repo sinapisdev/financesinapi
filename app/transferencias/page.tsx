@@ -6,7 +6,7 @@ type Params = { [k: string]: string | string[] | undefined };
 const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || '';
 
 export default async function Transferencias({ searchParams }: { searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('movimento');
   const sp = await searchParams;
   const criada = str(sp.criada);
   const de = str(sp.de);

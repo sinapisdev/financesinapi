@@ -2,16 +2,16 @@
 
 import { sair } from '@/app/entrar/acoes';
 
-const PAPEL = { admin: 'Administrador', financeiro: 'Financeiro', leitura: 'Somente leitura' } as const;
+import { PERFIS } from '@/lib/areas';
 
-export default function UsuarioBarra({ nome, papel }: { nome: string; papel: keyof typeof PAPEL }) {
+export default function UsuarioBarra({ nome, papel }: { nome: string; papel: string }) {
   const inicial = nome.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase();
   return (
     <div className="usuario-barra">
       <span className="ub-inicial" aria-hidden="true">{inicial}</span>
       <span className="ub-dados">
         <strong title={nome}>{nome}</strong>
-        <span>{PAPEL[papel] ?? papel}</span>
+        <span>{PERFIS[papel]?.nome ?? papel}</span>
       </span>
       <form action={sair}>
         <button className="ub-sair" type="submit" title="Sair" aria-label="Sair">

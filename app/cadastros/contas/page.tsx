@@ -10,7 +10,7 @@ const TIPO: Record<string, string> = {
 };
 
 export default async function Contas({ searchParams }: { searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('cadastros');
   const salvo = str((await searchParams).salvo);
 
   const linhas = await q(`

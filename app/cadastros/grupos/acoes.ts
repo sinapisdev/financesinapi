@@ -2,7 +2,7 @@
 
 import { pool, q } from '@/lib/db';
 import { normalizar } from '@/lib/texto';
-import { exigirEscrita } from '@/lib/auth';
+import { exigirEscritaArea } from '@/lib/permissoes';
 import { revalidatePath } from 'next/cache';
 
 export type Resultado = { erro?: string; ok?: boolean };
@@ -12,7 +12,7 @@ const CONTROLES = ['unidade', 'quantidade', 'nenhum'];
 const id = (v: FormDataEntryValue | null) => Number(v) || null;
 
 export async function salvarGrupo(_anterior: Resultado, form: FormData): Promise<Resultado> {
-  try { await exigirEscrita(); } catch (e: any) { return { erro: e.message }; }
+  try { await exigirEscritaArea('estoque'); } catch (e: any) { return { erro: e.message }; }
 
   const grupoId = Number(form.get('id')) || null;
   const codigo = normalizar(form.get('codigo'))?.replace(/\s+/g, '-') ?? '';

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function Baixar({ params, searchParams }: {
   params: Promise<{ id: string }>; searchParams: Promise<{ voltar?: string }>;
 }) {
-  await exigirEmpresa();
+  await exigirEmpresa('contas');
   const { id } = await params;
   const { voltar } = await searchParams;
   const parcelaId = Number(id);

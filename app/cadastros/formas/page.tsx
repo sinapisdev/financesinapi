@@ -5,7 +5,7 @@ import Lista from './Lista';
 export const dynamic = 'force-dynamic';
 
 export default async function Formas() {
-  await exigirEmpresa();
+  await exigirEmpresa('cadastros');
   const formas = await q(`
     select f.id, f.codigo, f.nome, f.ativo,
            (select count(*) from baixa b where b.forma_pagamento_id = f.id)::int as usos

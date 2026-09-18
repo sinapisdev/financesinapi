@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export default async function DetalheLancamento({ params, searchParams }: {
   params: Promise<{ id: string }>; searchParams: Promise<{ editado?: string }>;
 }) {
-  await exigirEmpresa();
+  await exigirEmpresa('movimento');
   const { id } = await params;
   const { editado } = await searchParams;
   const lancId = Number(id);

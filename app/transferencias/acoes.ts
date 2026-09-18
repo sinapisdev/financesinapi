@@ -3,7 +3,7 @@
 import { pool } from '@/lib/db';
 import { paraCentavos } from '@/lib/parcelamento';
 import { normalizar } from '@/lib/texto';
-import { exigirEscrita } from '@/lib/auth';
+import { exigirEscritaArea } from '@/lib/permissoes';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -11,7 +11,7 @@ export type Resultado = { erro?: string };
 
 export async function criarTransferencia(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let autor;
-  try { autor = await exigirEscrita(); }
+  try { autor = await exigirEscritaArea('movimento'); }
   catch (e: any) { return { erro: e.message }; }
 
   const empresaId = Number(form.get('empresa_id'));
@@ -54,7 +54,7 @@ export async function criarTransferencia(_anterior: Resultado, form: FormData): 
 
 export async function excluirTransferencia(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let autor;
-  try { autor = await exigirEscrita(); }
+  try { autor = await exigirEscritaArea('movimento'); }
   catch (e: any) { return { erro: e.message }; }
 
   const id = Number(form.get('transferencia_id'));

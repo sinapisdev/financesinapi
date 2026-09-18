@@ -6,7 +6,7 @@ import Formulario from '../Formulario';
 export const dynamic = 'force-dynamic';
 
 export default async function EditarPessoa({ params }: { params: Promise<{ id: string }> }) {
-  await exigirEmpresa();
+  await exigirEmpresa('cadastros');
   const { id } = await params;
   const [pessoa] = await q<any>(`
     select p.*,

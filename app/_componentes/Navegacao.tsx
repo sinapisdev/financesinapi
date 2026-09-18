@@ -1,5 +1,6 @@
 'use client';
 import { usePathname } from 'next/navigation';
+import { atende, type Area, type Mapa, type Nivel } from '@/lib/areas';
 
 const Icone = ({ d }: { d: string }) => (
   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.6}
@@ -28,48 +29,58 @@ const ICONES = {
   empresas:    'M3 17V6l6-3v14M9 17h8V9l-8-3M12 9.5h2M12 12.5h2',
 } as const;
 
-const SECOES = [
+// Cada item declara a área e o nível que ele exige. O menu mostra só o que a
+// pessoa consegue abrir — link para tela que dá "sem permissão" é ruído.
+const SECOES: {
+  titulo: string;
+  itens: { href: string; texto: string; icone: string; area: Area; nivel?: Nivel }[];
+}[] = [
   { titulo: 'Visão', itens: [
-    { href: '/painel', texto: 'Painel', icone: ICONES.painel },
+    { href: '/painel', texto: 'Painel', icone: ICONES.painel, area: 'painel' },
   ]},
   { titulo: 'Movimento', itens: [
-    { href: '/lancamentos', texto: 'Lançamentos', icone: ICONES.lancamentos },
-    { href: '/extrato',     texto: 'Extrato',     icone: ICONES.extrato },
-    { href: '/transferencias', texto: 'Transferências', icone: ICONES.transferir },
+    { href: '/lancamentos', texto: 'Lançamentos', icone: ICONES.lancamentos, area: 'movimento' },
+    { href: '/extrato',     texto: 'Extrato',     icone: ICONES.extrato, area: 'movimento' },
+    { href: '/transferencias', texto: 'Transferências', icone: ICONES.transferir, area: 'movimento' },
   ]},
   { titulo: 'Contas', itens: [
-    { href: '/receber', texto: 'A receber', icone: ICONES.receber },
-    { href: '/pagar',   texto: 'A pagar',   icone: ICONES.pagar },
+    { href: '/receber', texto: 'A receber', icone: ICONES.receber, area: 'contas' },
+    { href: '/pagar',   texto: 'A pagar',   icone: ICONES.pagar, area: 'contas' },
   ]},
   { titulo: 'Estoque', itens: [
-    { href: '/estoque', texto: 'Itens', icone: ICONES.estoque },
-    { href: '/estoque/entrada', texto: 'Entrada de nota', icone: ICONES.entrada },
-    { href: '/cadastros/grupos', texto: 'Grupos de item', icone: ICONES.grupos },
+    { href: '/estoque', texto: 'Itens', icone: ICONES.estoque, area: 'estoque' },
+    { href: '/estoque/entrada', texto: 'Entrada de nota', icone: ICONES.entrada, area: 'estoque', nivel: 'editar' },
+    { href: '/cadastros/grupos', texto: 'Grupos de item', icone: ICONES.grupos, area: 'estoque' },
   ]},
   { titulo: 'Cadastros', itens: [
-    { href: '/cadastros/pessoas', texto: 'Clientes e fornec.', icone: ICONES.pessoas },
-    { href: '/cadastros/centros', texto: 'Centros de custo',  icone: ICONES.centros },
-    { href: '/cadastros/contas',  texto: 'Contas bancárias',  icone: ICONES.contas },
-    { href: '/cadastros/formas',  texto: 'Formas de pagto',   icone: ICONES.formas },
-    { href: '/cadastros/empresas', texto: 'Empresas',          icone: ICONES.empresas },
+    { href: '/cadastros/pessoas', texto: 'Clientes e fornec.', icone: ICONES.pessoas, area: 'cadastros' },
+    { href: '/cadastros/centros', texto: 'Centros de custo',  icone: ICONES.centros, area: 'cadastros' },
+    { href: '/cadastros/contas',  texto: 'Contas bancárias',  icone: ICONES.contas, area: 'cadastros' },
+    { href: '/cadastros/formas',  texto: 'Formas de pagto',   icone: ICONES.formas, area: 'cadastros' },
+    { href: '/cadastros/empresas', texto: 'Empresas',         icone: ICONES.empresas, area: 'administracao' },
   ]},
   { titulo: 'Administração', itens: [
-    { href: '/cadastros/usuarios', texto: 'Acessos', icone: ICONES.acessos },
+    { href: '/cadastros/usuarios', texto: 'Acessos', icone: ICONES.acessos, area: 'administracao', nivel: 'editar' },
   ]},
   { titulo: 'Relatórios', itens: [
-    { href: '/relatorios/fluxo', texto: 'Fluxo de caixa', icone: ICONES.fluxo },
-    { href: '/relatorios/dre',   texto: 'DRE contábil',   icone: ICONES.dre },
-    { href: '/relatorios/dre-gerencial', texto: 'DRE gerencial', icone: ICONES.dre },
+    { href: '/relatorios/fluxo', texto: 'Fluxo de caixa', icone: ICONES.fluxo, area: 'relatorios' },
+    { href: '/relatorios/dre',   texto: 'DRE contábil',   icone: ICONES.dre, area: 'contabilidade' },
+    { href: '/relatorios/dre-gerencial', texto: 'DRE gerencial', icone: ICONES.dre, area: 'relatorios' },
   ]},
 ];
 
-export default function Navegacao() {
+export default function Navegacao({ perms }: { perms: Mapa }) {
   const rota = usePathname();
   const ativo = (href: string) => rota === href || rota.startsWith(href + '/');
 
+  // seção sem nenhum item liberado some junto com o título
+  const secoes = SECOES
+    .map((s) => ({ ...s, itens: s.itens.filter((i) => atende(perms[i.area], i.nivel ?? 'ver')) }))
+    .filter((s) => s.itens.length > 0);
+
   return (
     <nav>
-      {SECOES.map((secao) => (
+      {secoes.map((secao) => (
         <div key={secao.titulo}>
           <div className="grupo-nav">{secao.titulo}</div>
           {secao.itens.map((item) => (

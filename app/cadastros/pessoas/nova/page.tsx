@@ -4,7 +4,7 @@ import Formulario from '../Formulario';
 export const dynamic = 'force-dynamic';
 
 export default async function NovaPessoa() {
-  await exigirEmpresa();
+  await exigirEmpresa('cadastros');
   return (
     <main>
       <div className="cabecalho-pagina">

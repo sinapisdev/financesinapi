@@ -5,7 +5,7 @@ import Formulario from '../Formulario';
 export const dynamic = 'force-dynamic';
 
 export default async function NovaConta() {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('cadastros');
   const [empresas, centros, contasContabeis] = await Promise.all([
     q(`select id, razao_social as nome from empresa where ativo
         and ($1::bigint is null or id = $1) order by codigo`, [ctx.id]),

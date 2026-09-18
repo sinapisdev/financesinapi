@@ -5,7 +5,7 @@ import Lista from './Lista';
 export const dynamic = 'force-dynamic';
 
 export default async function Empresas() {
-  await exigirEmpresa();
+  await exigirEmpresa('administracao');
 
   const [empresas, ramos] = await Promise.all([
     q(`select e.id, e.codigo, e.cnpj, e.razao_social, e.nome_fantasia, e.tipo, e.ramo, e.ativo,

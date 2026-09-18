@@ -4,7 +4,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { q } from './db';
-import { exigirUsuario } from './auth';
+import { exigirArea, atende, type Area, type Mapa } from './permissoes';
 
 export const COOKIE_EMPRESA = 'empresa_ativa';
 
@@ -28,15 +28,36 @@ export async function empresaAtiva(): Promise<Contexto | null> {
 }
 
 /**
- * Usar no topo de toda página protegida. Exige usuário logado ANTES de
- * qualquer consulta — é o ponto único por onde todas as telas passam, então
- * proteger aqui protege o sistema inteiro.
+ * Usar no topo de toda página protegida. É o ponto único por onde todas as
+ * telas passam — proteger aqui protege o sistema inteiro. Checa, nesta ordem:
+ * sessão válida, permissão na área da tela, e se a empresa escolhida está
+ * entre as que a pessoa pode ver.
  */
-export async function exigirEmpresa(): Promise<Contexto> {
-  await exigirUsuario();
+export async function exigirEmpresa(area: Area): Promise<Contexto> {
+  const sessao = await exigirArea(area, 'ver');
   const ctx = await empresaAtiva();
   if (!ctx) redirect('/empresa');
+
+  // Escopo por empresa. Lista vazia = vê todas; senão, o consolidado fica
+  // fora, porque ele soma empresas que a pessoa não deveria enxergar.
+  if (sessao.empresas.length) {
+    if (ctx.todas || ctx.id === null || !sessao.empresas.includes(ctx.id)) {
+      redirect('/empresa');
+    }
+  }
   return ctx;
+}
+
+/** Igual à anterior, mas devolve também as permissões — para a tela decidir
+ *  o que mostrar (botão de editar, coluna a mais) sem consultar de novo. */
+export async function exigirEmpresaCom(area: Area): Promise<Contexto & { perms: Mapa; podeEditar: boolean }> {
+  const sessao = await exigirArea(area, 'ver');
+  const ctx = await empresaAtiva();
+  if (!ctx) redirect('/empresa');
+  if (sessao.empresas.length) {
+    if (ctx.todas || ctx.id === null || !sessao.empresas.includes(ctx.id)) redirect('/empresa');
+  }
+  return { ...ctx, perms: sessao.perms, podeEditar: atende(sessao.perms[area], 'editar') };
 }
 
 /** Nome curto para caber na barra lateral e nos cabeçalhos. */

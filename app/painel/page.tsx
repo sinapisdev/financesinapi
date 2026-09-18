@@ -5,7 +5,7 @@ import GraficoMensal from '@/app/_componentes/GraficoMensal';
 export const dynamic = 'force-dynamic';
 
 export default async function Painel() {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('painel');
   const hoje = new Date().toISOString().slice(0, 10);
   const mesAtual = hoje.slice(0, 7);
 
