@@ -28,7 +28,9 @@ export async function conferirSenha(senha: string, guardado: string): Promise<bo
 }
 
 export type Usuario = {
-  id: number; email: string; nome: string; papel: 'admin' | 'financeiro' | 'leitura';
+  id: number; email: string; nome: string;
+  /** Perfil base. A permissão que vale está em usuario_permissao. */
+  papel: 'admin' | 'financeiro' | 'contabil' | 'obra' | 'leitura' | 'personalizado';
   precisa_trocar_senha: boolean;
 };
 
@@ -55,27 +57,9 @@ export async function exigirUsuario(): Promise<Usuario> {
   return u;
 }
 
-export async function exigirPapel(papeis: Usuario['papel'][]): Promise<Usuario> {
-  const u = await exigirUsuario();
-  if (!papeis.includes(u.papel)) redirect('/sem-permissao');
-  return u;
-}
-
-/** Só quem pode escrever. Leitura entra, mas não altera nada. */
-export const podeEscrever = (u: Usuario) => u.papel === 'admin' || u.papel === 'financeiro';
-
-/**
- * Guarda de toda server action que grava.
- * As actions NÃO passam pelas verificações das páginas — são endpoints
- * próprios. Sem esta checagem, um usuário de leitura (ou ninguém logado)
- * conseguiria gravar chamando a action direto.
- */
-export async function exigirEscrita(): Promise<Usuario> {
-  const u = await usuarioLogado();
-  if (!u) throw new Error('Sessão expirada. Entre de novo para continuar.');
-  if (!podeEscrever(u)) throw new Error('Seu acesso é somente de leitura.');
-  return u;
-}
+// Permissão por área mora em lib/permissoes.ts: exigirArea nas páginas e
+// exigirEscritaArea nas server actions. Aqui ficou só sessão e senha, para
+// não existirem dois modelos de permissão concorrendo.
 
 export async function criarSessao(usuarioId: number): Promise<string> {
   const token = randomBytes(32).toString('base64url');

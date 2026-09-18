@@ -18,7 +18,7 @@ const qtd = (v: number, unidade: string) =>
   `${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 4 })} ${unidade}`;
 
 export default async function Estoque({ searchParams }: { searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('estoque');
   const sp = await searchParams;
   const grupo = str(sp.grupo);
   const situacao = str(sp.situacao) || 'em_estoque';

@@ -2,7 +2,7 @@
 
 import { pool } from '@/lib/db';
 import { gerarParcelas, paraCentavos, type PlanoPagamento } from '@/lib/parcelamento';
-import { exigirEscrita } from '@/lib/auth';
+import { exigirEscritaArea } from '@/lib/permissoes';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { normalizar } from '@/lib/texto';
@@ -12,7 +12,7 @@ export type Resultado = { erro?: string };
 /** Edita a descrição e tira a marca de "gerada automaticamente". */
 export async function editarDescricao(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let autor;
-  try { autor = await exigirEscrita(); }
+  try { autor = await exigirEscritaArea('movimento'); }
   catch (e: any) { return { erro: e.message }; }
 
   const id = Number(form.get('lancamento_id'));
@@ -35,7 +35,7 @@ export async function editarDescricao(_anterior: Resultado, form: FormData): Pro
 
 export async function criarLancamento(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let autor;
-  try { autor = await exigirEscrita(); }
+  try { autor = await exigirEscritaArea('movimento'); }
   catch (e: any) { return { erro: e.message }; }
 
   const tipo = String(form.get('tipo') || '');
@@ -171,7 +171,7 @@ export async function criarLancamento(_anterior: Resultado, form: FormData): Pro
  */
 export async function editarLancamento(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let autor;
-  try { autor = await exigirEscrita(); }
+  try { autor = await exigirEscritaArea('movimento'); }
   catch (e: any) { return { erro: e.message }; }
 
   const id = Number(form.get('lancamento_id'));

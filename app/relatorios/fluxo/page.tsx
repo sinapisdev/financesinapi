@@ -11,7 +11,7 @@ const rotuloMes = (iso: string) => {
 };
 
 export default async function Fluxo({ searchParams }: { searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('relatorios');
   const sp = await searchParams;
   const meses = Number(str(sp.meses)) || 12;
   const hoje = new Date().toISOString().slice(0, 10);

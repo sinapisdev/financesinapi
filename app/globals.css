@@ -658,3 +658,38 @@ tbody td.num { max-width: none; }
   padding: 2px 8px; border-radius: 4px; font-size: 14px; font-weight: 600;
   letter-spacing: .02em; user-select: all;
 }
+
+/* ===================================================== ACESSOS E CONVITE */
+
+/* Matriz de permissão: a área à esquerda, os três níveis em colunas. */
+.matriz-acesso th.num,
+.matriz-acesso td.num { width: 92px; text-align: center; }
+.matriz-acesso td.num input[type="radio"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--navy); }
+.matriz-acesso tbody tr:hover { background: var(--off-white); }
+.matriz-acesso td { vertical-align: middle; }
+
+.lista-empresas {
+  display: flex; flex-wrap: wrap; gap: 8px 18px;
+  padding: 10px 12px; border: 1px solid var(--linha);
+  border-radius: var(--raio); background: var(--off-white);
+}
+.check-empresa { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; }
+.check-empresa input { width: 15px; height: 15px; accent-color: var(--navy); cursor: pointer; }
+
+/* Link do convite: aparece uma vez, então copiar tem de ser óbvio. */
+.link-convite { display: flex; gap: 8px; margin-top: 10px; }
+.link-convite input {
+  flex: 1; height: 34px; padding: 0 10px;
+  border: 1px solid var(--linha-forte); border-radius: var(--raio);
+  background: var(--branco); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px; color: var(--grafite);
+}
+
+/* Resumo do que a pessoa vai poder fazer, na tela do convite. */
+.resumo-convite {
+  padding: 12px 14px; margin-bottom: 18px;
+  border: 1px solid var(--linha); border-radius: var(--raio);
+  background: var(--off-white);
+}
+.resumo-convite ul { margin: 8px 0 0; padding-left: 18px; }
+.resumo-convite li { font-size: 13px; margin-bottom: 3px; color: var(--grafite); }

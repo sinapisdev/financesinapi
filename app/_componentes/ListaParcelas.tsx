@@ -7,7 +7,7 @@ const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) 
 export default async function ListaParcelas({
   tipo, searchParams,
 }: { tipo: 'receber' | 'pagar'; searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('contas');
   const sp = await searchParams;
   const centro   = str(sp.centro);
   const situacao = str(sp.situacao) || 'em_aberto';

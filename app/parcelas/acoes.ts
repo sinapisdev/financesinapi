@@ -2,7 +2,7 @@
 
 import { pool } from '@/lib/db';
 import { paraCentavos } from '@/lib/parcelamento';
-import { exigirEscrita } from '@/lib/auth';
+import { exigirEscritaArea } from '@/lib/permissoes';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { normalizar } from '@/lib/texto';
@@ -12,7 +12,7 @@ export type Resultado = { erro?: string };
 /** Liquida (total ou parcialmente) uma parcela. */
 export async function darBaixa(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let autor;
-  try { autor = await exigirEscrita(); }
+  try { autor = await exigirEscritaArea('contas'); }
   catch (e: any) { return { erro: e.message }; }
 
   const parcelaId = Number(form.get('parcela_id'));
@@ -67,7 +67,7 @@ export async function darBaixa(_anterior: Resultado, form: FormData): Promise<Re
 /** Estorna uma baixa: ela fica no histórico e deixa de contar no caixa. */
 export async function estornarBaixa(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let autor;
-  try { autor = await exigirEscrita(); }
+  try { autor = await exigirEscritaArea('contas'); }
   catch (e: any) { return { erro: e.message }; }
 
   const baixaId = Number(form.get('baixa_id'));
@@ -89,7 +89,7 @@ export async function estornarBaixa(_anterior: Resultado, form: FormData): Promi
 /** Cancela o lançamento e suas parcelas em aberto. Baixas já feitas não são desfeitas. */
 export async function cancelarLancamento(_anterior: Resultado, form: FormData): Promise<Resultado> {
   let autor;
-  try { autor = await exigirEscrita(); }
+  try { autor = await exigirEscritaArea('contas'); }
   catch (e: any) { return { erro: e.message }; }
 
   const id = Number(form.get('lancamento_id'));

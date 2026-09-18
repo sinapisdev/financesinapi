@@ -1,104 +1,192 @@
 'use client';
 
 import { useActionState, useState } from 'react';
-import { salvarUsuario, resetarSenha, type Resultado } from './acoes';
+import {
+  criarConvite, cancelarConvite, salvarAcesso, resetarSenha, type Resultado,
+} from './acoes';
+import EditorAcesso, { type Empresa } from './EditorAcesso';
+import { PERFIS, type Mapa } from '@/lib/areas';
 
-const PAPEL: Record<string, string> = {
-  admin: 'Administrador', financeiro: 'Financeiro', leitura: 'Somente leitura',
+type Usuario = {
+  id: number; email: string; nome: string; papel: string; ativo: boolean;
+  precisa_trocar_senha: boolean; ultimo_acesso: string | null;
+  areas: Partial<Mapa>; empresas: number[];
 };
+type Convite = {
+  token: string; email: string; nome: string; papel: string;
+  expira: string; vencido: boolean; convidou: string | null;
+};
+
+/** O link só existe nesta tela, uma vez. Copiar precisa ser trivial. */
+function LinkConvite({ link, nome, expira }: { link: string; nome: string; expira: string }) {
+  const [copiou, setCopiou] = useState(false);
+  return (
+    <div className="sucesso">
+      <strong>Convite de {nome} pronto.</strong> Mande este link para a pessoa — ela escolhe a
+      própria senha e já entra. Vale até <strong>{expira}</strong> e funciona uma vez só.
+      <div className="link-convite">
+        <input readOnly value={link} onFocus={(e) => e.currentTarget.select()} />
+        <button type="button" className="aplicar pequeno"
+                onClick={() => {
+                  navigator.clipboard?.writeText(link).then(() => {
+                    setCopiou(true);
+                    setTimeout(() => setCopiou(false), 2500);
+                  });
+                }}>
+          {copiou ? 'Copiado' : 'Copiar'}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function SenhaGerada({ senha, nome }: { senha: string; nome?: string }) {
   return (
     <div className="sucesso">
-      <strong>Acesso de {nome} pronto.</strong> Senha temporária:{' '}
-      <code className="senha-temp">{senha}</code><br />
-      Passe para a pessoa — ela vai trocar no primeiro acesso.
+      <strong>Senha temporária de {nome}:</strong> <code className="senha-temp">{senha}</code><br />
+      Passe para a pessoa — ela troca no primeiro acesso.
       <strong> Esta senha não aparece de novo.</strong>
     </div>
   );
 }
 
-export default function Gerenciar({ usuarios, souEu }: { usuarios: any[]; souEu: number }) {
-  const [novo, setNovo] = useState(false);
-  const [estado, acao, enviando] = useActionState<Resultado, FormData>(salvarUsuario, {});
-  const [reset, acaoReset, resetando] = useActionState<Resultado, FormData>(resetarSenha, {});
+export default function Gerenciar({
+  usuarios, convites, empresas, souEu,
+}: { usuarios: Usuario[]; convites: Convite[]; empresas: Empresa[]; souEu: number }) {
+  const [convidando, setConvidando] = useState(false);
   const [editando, setEditando] = useState<number | null>(null);
+
+  const [conv, acaoConvidar, convidandoEnv] = useActionState<Resultado, FormData>(criarConvite, {});
+  const [canc, acaoCancelar] = useActionState<Resultado, FormData>(cancelarConvite, {});
+  const [salvo, acaoSalvar, salvando] = useActionState<Resultado, FormData>(salvarAcesso, {});
+  const [reset, acaoReset, resetando] = useActionState<Resultado, FormData>(resetarSenha, {});
+
+  const erro = conv.erro || canc.erro || salvo.erro || reset.erro;
+  const nomeEmpresa = (id: number) => empresas.find((e) => e.id === id)?.razao_social ?? `#${id}`;
 
   return (
     <>
-      {estado.senhaTemporaria && <SenhaGerada senha={estado.senhaTemporaria} nome={estado.nome} />}
+      {erro && <div className="erro">{erro}</div>}
+      {conv.convite && <LinkConvite {...conv.convite} />}
       {reset.senhaTemporaria && <SenhaGerada senha={reset.senhaTemporaria} nome={reset.nome} />}
-      {estado.erro && <div className="erro">{estado.erro}</div>}
-      {reset.erro && <div className="erro">{reset.erro}</div>}
+      {salvo.ok && <div className="sucesso">{salvo.ok}</div>}
+      {canc.ok && <div className="sucesso">{canc.ok}</div>}
 
-      {novo && (
+      {convidando ? (
         <section className="bloco">
-          <h2>Novo acesso</h2>
-          <form action={acao}>
+          <h2>Convidar pessoa</h2>
+          <p className="sub" style={{ marginBottom: 12 }}>
+            Você define o que ela pode fazer agora; ela escolhe a senha ao abrir o link.
+          </p>
+          <form action={acaoConvidar}>
             <div className="grade">
               <div className="campo c4">
-                <label htmlFor="email">E-mail</label>
-                <input id="email" name="email" type="email" required autoFocus />
+                <label htmlFor="nome-conv">Nome</label>
+                <input id="nome-conv" name="nome" className="maiusculas" required minLength={3} autoFocus />
               </div>
-              <div className="campo c5">
-                <label htmlFor="nome">Nome</label>
-                <input id="nome" name="nome" className="maiusculas" required minLength={3} />
+              <div className="campo c4">
+                <label htmlFor="email-conv">E-mail</label>
+                <input id="email-conv" name="email" type="email" required
+                       placeholder="nome@silvereng.com.br" />
               </div>
-              <div className="campo c3">
-                <label htmlFor="papel">Papel</label>
-                <select id="papel" name="papel" defaultValue="financeiro">
-                  <option value="financeiro">Financeiro — lança, baixa, edita</option>
-                  <option value="leitura">Leitura — só consulta</option>
-                  <option value="admin">Administrador — tudo</option>
-                </select>
-              </div>
+              <EditorAcesso empresas={empresas} idForm="conv" />
             </div>
             <div className="acoes" style={{ marginTop: 14 }}>
-              <button type="button" className="btn-secundario" onClick={() => setNovo(false)}>Cancelar</button>
-              <button className="aplicar" disabled={enviando}>
-                {enviando ? 'Criando…' : 'Criar acesso'}
+              <button type="button" className="btn-secundario"
+                      onClick={() => setConvidando(false)}>Cancelar</button>
+              <button className="aplicar" disabled={convidandoEnv}>
+                {convidandoEnv ? 'Gerando…' : 'Gerar convite'}
               </button>
             </div>
           </form>
         </section>
+      ) : (
+        <div style={{ marginBottom: 14 }}>
+          <button className="aplicar" onClick={() => setConvidando(true)}>Convidar pessoa</button>
+        </div>
       )}
 
-      {!novo && (
-        <div style={{ marginBottom: 14 }}>
-          <button className="aplicar" onClick={() => setNovo(true)}>Novo acesso</button>
-        </div>
+      {convites.length > 0 && (
+        <section className="bloco">
+          <h2>Convites abertos</h2>
+          <div className="tabela-wrap">
+            <table>
+              <thead>
+                <tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Vale até</th><th className="num"></th></tr>
+              </thead>
+              <tbody>
+                {convites.map((c) => (
+                  <tr key={c.token} style={c.vencido ? { opacity: .55 } : undefined}>
+                    <td className="desc">{c.nome}</td>
+                    <td className="sub">{c.email}</td>
+                    <td><span className="tag tag-transf">{PERFIS[c.papel]?.nome ?? c.papel}</span></td>
+                    <td className="sub tabular">
+                      {c.expira}
+                      {c.vencido && <div className="sub">vencido — gere outro</div>}
+                    </td>
+                    <td className="num">
+                      <form action={acaoCancelar} style={{ display: 'inline' }}>
+                        <input type="hidden" name="token" value={c.token} />
+                        <button className="link-acao">Cancelar</button>
+                      </form>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
       <div className="tabela-wrap">
         <table>
           <thead>
             <tr>
-              <th>Nome</th><th>E-mail</th><th>Papel</th><th>Situação</th>
+              <th>Nome</th><th>Perfil</th><th>Empresas</th><th>Situação</th>
               <th className="oculta-mobile">Último acesso</th><th className="num"></th>
             </tr>
           </thead>
           <tbody>
-            {usuarios.map((u: any) => (
+            {usuarios.map((u) => (
               editando === u.id ? (
                 <tr key={u.id}>
-                  <td colSpan={6}>
-                    <form action={acao} className="form-inline" style={{ padding: '4px 0' }}>
+                  <td colSpan={6} style={{ background: 'var(--off-white)' }}>
+                    <form action={acaoSalvar}>
                       <input type="hidden" name="id" value={u.id} />
-                      <input name="nome" defaultValue={u.nome} className="maiusculas" required />
-                      <input name="email" type="email" defaultValue={u.email} required />
-                      <select name="papel" defaultValue={u.papel}
-                              style={{ height: 34, borderRadius: 6, border: '1px solid var(--linha-forte)', padding: '0 8px' }}>
-                        <option value="financeiro">Financeiro</option>
-                        <option value="leitura">Leitura</option>
-                        <option value="admin">Administrador</option>
-                      </select>
-                      <select name="ativo" defaultValue={u.ativo ? 'on' : 'off'}
-                              style={{ height: 34, borderRadius: 6, border: '1px solid var(--linha-forte)', padding: '0 8px' }}>
-                        <option value="on">Ativo</option>
-                        <option value="off">Inativo</option>
-                      </select>
-                      <button className="aplicar pequeno" disabled={enviando}>Salvar</button>
-                      <button type="button" className="link-acao" onClick={() => setEditando(null)}>Cancelar</button>
+                      <div className="grade">
+                        <div className="campo c4">
+                          <label htmlFor={`nome-${u.id}`}>Nome</label>
+                          <input id={`nome-${u.id}`} name="nome" defaultValue={u.nome}
+                                 className="maiusculas" required minLength={3} />
+                        </div>
+                        <div className="campo c4">
+                          <label htmlFor={`email-${u.id}`}>E-mail</label>
+                          <input id={`email-${u.id}`} name="email" type="email"
+                                 defaultValue={u.email} required />
+                        </div>
+                        <div className="campo c4">
+                          <label htmlFor={`ativo-${u.id}`}>Situação</label>
+                          <select id={`ativo-${u.id}`} name="ativo" defaultValue={u.ativo ? 'on' : 'off'}>
+                            <option value="on">Ativo</option>
+                            <option value="off">Inativo — não consegue entrar</option>
+                          </select>
+                        </div>
+                        <EditorAcesso
+                          idForm={String(u.id)}
+                          papelInicial={u.papel}
+                          areasIniciais={{ ...(Object.fromEntries(
+                            Object.entries(u.areas)) as Partial<Mapa>) } as Mapa}
+                          empresasIniciais={u.empresas ?? []}
+                          empresas={empresas}
+                        />
+                      </div>
+                      <div className="acoes" style={{ marginTop: 14 }}>
+                        <button type="button" className="btn-secundario"
+                                onClick={() => setEditando(null)}>Cancelar</button>
+                        <button className="aplicar" disabled={salvando}>
+                          {salvando ? 'Salvando…' : 'Salvar acesso'}
+                        </button>
+                      </div>
                     </form>
                   </td>
                 </tr>
@@ -106,14 +194,17 @@ export default function Gerenciar({ usuarios, souEu }: { usuarios: any[]; souEu:
                 <tr key={u.id} style={!u.ativo ? { opacity: .55 } : undefined}>
                   <td>
                     <div className="desc">{u.nome}</div>
-                    {u.id === souEu && <div className="sub">você</div>}
+                    <div className="sub">{u.email}{u.id === souEu ? ' · você' : ''}</div>
                   </td>
-                  <td className="sub">{u.email}</td>
                   <td>
-                    <span className={`tag ${u.papel === 'admin' ? 'tag-alerta'
-                      : u.papel === 'leitura' ? 'tag-transf' : 'tag-entrada'}`}>
-                      {PAPEL[u.papel]}
+                    <span className={`tag ${u.papel === 'admin' ? 'tag-alerta' : 'tag-entrada'}`}>
+                      {PERFIS[u.papel]?.nome ?? u.papel}
                     </span>
+                  </td>
+                  <td className="sub">
+                    {!u.empresas?.length
+                      ? 'todas'
+                      : u.empresas.map(nomeEmpresa).join(', ')}
                   </td>
                   <td>
                     {u.ativo ? <span className="tag tag-entrada">ativo</span>

@@ -6,7 +6,7 @@ import Formulario from './Formulario';
 export const dynamic = 'force-dynamic';
 
 export default async function EditarLancamento({ params }: { params: Promise<{ id: string }> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('movimento');
   const { id } = await params;
   const lancId = Number(id);
   if (!lancId) notFound();

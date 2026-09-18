@@ -14,7 +14,7 @@ const STATUS_ROTULO: Record<string, string> = {
 };
 
 export default async function Centros({ searchParams }: { searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('cadastros');
   const sp = await searchParams;
   const salvo = str(sp.salvo);
 

@@ -5,7 +5,7 @@ import Formulario from './Formulario';
 export const dynamic = 'force-dynamic';
 
 export default async function NovaTransferencia() {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('movimento');
 
   const [contas, empresas] = await Promise.all([
     // saldo por conta = tudo que entrou menos tudo que saiu dela

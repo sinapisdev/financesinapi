@@ -5,7 +5,7 @@ import { exigirEmpresa } from '@/lib/empresa';
 export const dynamic = 'force-dynamic';
 
 export default async function NovoItem() {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('estoque');
   const opcoes = await opcoesItem(ctx);
 
   return (

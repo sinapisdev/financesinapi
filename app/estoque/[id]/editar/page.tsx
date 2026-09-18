@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default async function EditarItem({ params }: { params: Promise<{ id: string }> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('estoque');
   const { id } = await params;
   const [item] = await q(
     `select i.*, i.preco_venda::float8 as preco_venda,

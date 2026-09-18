@@ -2,13 +2,13 @@
 
 import { pool, q } from '@/lib/db';
 import { normalizar } from '@/lib/texto';
-import { exigirEscrita } from '@/lib/auth';
+import { exigirEscritaArea } from '@/lib/permissoes';
 import { revalidatePath } from 'next/cache';
 
 export type Resultado = { erro?: string; ok?: boolean };
 
 export async function salvarForma(_anterior: Resultado, form: FormData): Promise<Resultado> {
-  try { await exigirEscrita(); } catch (e: any) { return { erro: e.message }; }
+  try { await exigirEscritaArea('cadastros'); } catch (e: any) { return { erro: e.message }; }
 
   const id = Number(form.get('id')) || null;
   const nome = normalizar(form.get('nome'));
@@ -34,7 +34,7 @@ export async function salvarForma(_anterior: Resultado, form: FormData): Promise
 }
 
 export async function alternarForma(_anterior: Resultado, form: FormData): Promise<Resultado> {
-  try { await exigirEscrita(); } catch (e: any) { return { erro: e.message }; }
+  try { await exigirEscritaArea('cadastros'); } catch (e: any) { return { erro: e.message }; }
   const id = Number(form.get('id'));
   if (!id) return { erro: 'Forma não informada.' };
   await pool.query('update forma_pagamento set ativo = not ativo where id = $1', [id]);

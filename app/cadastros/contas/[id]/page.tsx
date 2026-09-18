@@ -6,7 +6,7 @@ import Formulario from '../Formulario';
 export const dynamic = 'force-dynamic';
 
 export default async function EditarConta({ params }: { params: Promise<{ id: string }> }) {
-  await exigirEmpresa();
+  await exigirEmpresa('cadastros');
   const { id } = await params;
   const [conta] = await q<any>(`
     select cb.*, cb.data_saldo_inicial::text as data_saldo_inicial,

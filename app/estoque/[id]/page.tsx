@@ -26,7 +26,7 @@ export default async function DetalheItem({ params, searchParams }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ movimentado?: string; estornado?: string; situacao?: string }>;
 }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('estoque');
   const { id } = await params;
   const aviso = await searchParams;
   const itemId = Number(id);

@@ -2,15 +2,21 @@ import { q, brl } from '@/lib/db';
 import { empresaAtiva, nomeCurto } from '@/lib/empresa';
 import { escolherEmpresa } from './acoes';
 import { exigirUsuario } from '@/lib/auth';
+import { empresasDe } from '@/lib/permissoes';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EscolherEmpresa({ searchParams }: {
   searchParams: Promise<{ destino?: string }>;
 }) {
-  await exigirUsuario();
+  const eu = await exigirUsuario();
   const { destino } = await searchParams;
   const atual = await empresaAtiva();
+
+  // Escopo do usuário. Lista vazia = vê todas; com restrição, o consolidado
+  // sai da tela, porque somaria empresas que a pessoa não pode enxergar.
+  const permitidas = await empresasDe(eu.id);
+  const podeConsolidado = permitidas.length === 0;
 
   // Cada total em sua própria subconsulta: juntar lançamentos e movimentos na
   // mesma query multiplica as linhas de um pelo outro e infla os dois.
@@ -24,7 +30,9 @@ export default async function EscolherEmpresa({ searchParams }: {
               from parcela p join lancamento l2 on l2.id = p.lancamento_id
              where l2.empresa_id = e.id and p.tipo = 'receber'
                and p.status in ('aberta','parcial'))::float8 as a_receber
-      from empresa e where e.ativo order by e.codigo`);
+      from empresa e
+     where e.ativo and ($1::bigint[] = '{}' or e.id = any($1))
+     order by e.codigo`, [permitidas]);
 
   const totalCaixa = empresas.reduce((s: number, e: any) => s + e.caixa, 0);
   const totalReceber = empresas.reduce((s: number, e: any) => s + e.a_receber, 0);
@@ -65,7 +73,7 @@ export default async function EscolherEmpresa({ searchParams }: {
           </button>
         ))}
 
-        <button type="submit" name="empresa" value="todas"
+        {podeConsolidado && <button type="submit" name="empresa" value="todas"
                 className={`cartao-empresa consolidado ${atual?.todas ? 'atual' : ''}`}>
           <div className="ce-topo">
             <span className="tag tag-alerta">consolidado</span>
@@ -77,7 +85,7 @@ export default async function EscolherEmpresa({ searchParams }: {
             <span>{totalLanc} lançamentos · {brl(totalReceber)} a receber</span>
             <span className={totalCaixa >= 0 ? 'v-entrada' : 'v-saida'}>{brl(totalCaixa)}</span>
           </div>
-        </button>
+        </button>}
       </form>
     </main>
   );

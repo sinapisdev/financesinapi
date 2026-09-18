@@ -7,7 +7,7 @@ type Params = { [k: string]: string | string[] | undefined };
 const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || '';
 
 export default async function Pessoas({ searchParams }: { searchParams: Promise<Params> }) {
-  await exigirEmpresa();
+  await exigirEmpresa('cadastros');
   const sp = await searchParams;
   const busca = str(sp.busca);
   const papel = str(sp.papel);

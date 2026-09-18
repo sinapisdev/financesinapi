@@ -2,7 +2,7 @@
 
 import { pool, q } from '@/lib/db';
 import { normalizar } from '@/lib/texto';
-import { exigirEscrita } from '@/lib/auth';
+import { exigirEscritaArea } from '@/lib/permissoes';
 import { cnpjValido, soDigitos } from '@/lib/documento';
 import { revalidatePath } from 'next/cache';
 
@@ -11,7 +11,7 @@ export type Resultado = { erro?: string; ok?: boolean };
 const TIPOS = ['operacional', 'spe', 'holding'];
 
 export async function salvarEmpresa(_anterior: Resultado, form: FormData): Promise<Resultado> {
-  try { await exigirEscrita(); } catch (e: any) { return { erro: e.message }; }
+  try { await exigirEscritaArea('administracao'); } catch (e: any) { return { erro: e.message }; }
 
   const id = Number(form.get('id')) || null;
   const codigo = Number(form.get('codigo'));

@@ -8,7 +8,7 @@ const str = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) 
 const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 
 export default async function DreGerencial({ searchParams }: { searchParams: Promise<Params> }) {
-  const ctx = await exigirEmpresa();
+  const ctx = await exigirEmpresa('relatorios');
   const sp = await searchParams;
   const ano = Number(str(sp.ano)) || 2026;
 

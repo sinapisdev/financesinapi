@@ -4,6 +4,7 @@ import Navegacao from './_componentes/Navegacao';
 import UsuarioBarra from './_componentes/UsuarioBarra';
 import { empresaAtiva, nomeCurto } from '@/lib/empresa';
 import { usuarioLogado } from '@/lib/auth';
+import { permissoesDe } from '@/lib/permissoes';
 
 export const metadata: Metadata = {
   title: 'Financeiro · Grupo Silvereng',
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const usuario = await usuarioLogado();
-  const ctx = usuario ? await empresaAtiva() : null;
+  const [ctx, perms] = usuario
+    ? await Promise.all([empresaAtiva(), permissoesDe(usuario.id)])
+    : [null, null];
   // sem usuário (login, troca de senha) ou sem empresa: só o conteúdo
   const comBarra = !!usuario && !!ctx;
 
@@ -41,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <span className="se-trocar">trocar</span>
               </a>
 
-              <Navegacao />
+              <Navegacao perms={perms!} />
               <UsuarioBarra nome={usuario!.nome} papel={usuario!.papel} />
             </aside>
             <div className="conteudo">{children}</div>
